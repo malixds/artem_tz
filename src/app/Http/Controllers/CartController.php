@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    protected $repository;
+    protected ICartRepository $repository;
+
     public function __construct(ICartRepository $repository)
     {
         $this->repository = $repository;

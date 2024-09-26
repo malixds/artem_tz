@@ -11,23 +11,23 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/register', [UserController::class, 'register'])->name('register');
 Route::post('/login', [UserController::class, 'login'])->name('login');
-Route::put('/password/{id}', [UserController::class, 'password'])->name('password');
+Route::put('/password/{uuid}', [UserController::class, 'password'])->name('password');
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
 
-    Route::get('/users/{id?}', [UserController::class, 'users'])->name('users');
-    Route::post('/update/{id}', [UserController::class, 'update'])->name('update');
+    Route::get('/users/{uuid?}', [UserController::class, 'users'])->name('users');
+    Route::put('/update/{uuid}', [UserController::class, 'update'])->name('update');
 
-    Route::delete('/cart/{id}', [UserController::class, 'cart'])->name('cart');
-    Route::get('/cart/{id}', [CartController::class, 'cart'])->name('cart');
+    Route::delete('/cart/{uuid}', [UserController::class, 'cart'])->name('cart-delete');
+    Route::get('/cart/{uuid?}', [CartController::class, 'cart'])->name('cart');
 
-    Route::post('/recover/{id}', [UserController::class, 'recover'])->name('recover');
-    Route::post('/recoverGroup/{ids}', [UserController::class, 'recoverGroup'])->name('recover-group');
+    Route::post('/recover/{uuid}', [UserController::class, 'recover'])->name('recover');
+    Route::post('/recoverGroup/{uuids}', [UserController::class, 'recoverGroup'])->name('recover-group');
 
-    Route::delete('/delete/{id}', [UserController::class, 'delete'])->name('delete');
-    Route::delete('/deleteGroup/{ids}', [UserController::class, 'deleteGroup'])->name('delete-group');
+    Route::delete('/delete/{uuid}', [UserController::class, 'delete'])->name('delete');
+    Route::delete('/deleteGroup/{uuids}', [UserController::class, 'deleteGroup'])->name('delete-group');
 
-    Route::delete('/cart/group/{ids}', [UserController::class, 'cartGroup'])->name('cart-group');
+    Route::delete('/cart/group/{uuids}', [UserController::class, 'cartGroup'])->name('cart-group');
 
 });
 

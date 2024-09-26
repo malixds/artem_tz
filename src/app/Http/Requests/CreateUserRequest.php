@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Ramsey\Uuid\Uuid;
 
 class CreateUserRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class CreateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +25,7 @@ class CreateUserRequest extends FormRequest
         return [
             'email'     => 'required|string|email|max:255|unique:users',
             'name'     => 'required|string|max:24|',
-            'password'  => 'required|string|min:8|confirmed',
+            'password'  => 'required|string|min:8',
         ];
     }
 }

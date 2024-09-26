@@ -6,22 +6,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
+use Ramsey\Uuid\Uuid;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
+
+    public $incrementing = false;
+
+    // Указываем, что ID — это строка
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $guarded = false;
 
     /**
      * The attributes that should be hidden for serialization.
@@ -29,7 +32,6 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $hidden = [
-        'password',
         'remember_token',
     ];
 
@@ -46,10 +48,14 @@ class User extends Authenticatable
         ];
     }
 
-    public function isAuth(): void
+    protected static function boot()
     {
-        if (!auth()->check()){
-            abort(403, 'User is not authorized');
-        }
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->getKey()) {
+                $model->{$model->getKeyName()} = Uuid::uuid6()->toString();
+            }
+        });
     }
 }

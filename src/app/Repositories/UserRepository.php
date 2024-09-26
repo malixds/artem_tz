@@ -13,21 +13,26 @@ class UserRepository implements IUserRepository
     {
         return User::query()->create($data);
     }
-    public function delete(int $id): void
+    public function delete(string $uuid): void
     {
-        User::query()->find($id)->delete();
+        User::query()->where('id', $uuid)->firstOrFail()->delete();
     }
     public function find(int $id): User
     {
         return User::query()->find($id);
     }
-    public function update(int $id, array $data): void
+    public function update(string $uuid, array $data): void
     {
-        User::query()->find($id)->update($data);
+        User::query()->where('id', $uuid)->firstOrFail()->update($data);
     }
 
     public function get(): Collection
     {
         return User::query()->get();
+    }
+
+    public function findOrFail(string $uuid): ?User
+    {
+        return User::query()->where('id', $uuid)->firstOrFail();
     }
 }

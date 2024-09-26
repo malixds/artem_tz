@@ -4,7 +4,9 @@ namespace App\Repositories;
 
 use App\Interfaces\ICartRepository;
 use App\Models\Cart;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use function Illuminate\Events\queueable;
 
 class CartRepository implements ICartRepository
 {
@@ -12,9 +14,9 @@ class CartRepository implements ICartRepository
     {
         return Cart::query()->create($data);
     }
-    public function delete(int $id): void
+    public function delete(string $uuid): void
     {
-        Cart::query()->find($id)->delete();
+        Cart::query()->where('user_id', $uuid)->firstOrFail()->delete();
     }
     public function find(int $id): Cart
     {
@@ -23,5 +25,9 @@ class CartRepository implements ICartRepository
     public function get(): Collection
     {
         return Cart::query()->get();
+    }
+    public function findOrFail(string $uuid): ?Cart
+    {
+        return Cart::query()->where('user_id', $uuid)->firstOrFail();
     }
 }

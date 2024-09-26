@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ActionEnum;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\LoginUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Interfaces\ICartRepository;
 use App\Interfaces\IUserRepository;
+use App\Models\History;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\Hash;
 class UserController
 {
 
-    private $repository;
+    private IUserRepository $repository;
     private $repositoryCart;
 
     public function __construct(IUserRepository $repository, ICartRepository $repositoryCart)
@@ -28,9 +30,10 @@ class UserController
     public function register(CreateUserRequest $request): JsonResponse
     {
         $user = $this->repository->create($request->validated());
-
+        History::logAction($user, ActionEnum::REGISTER);
         return response()->json([
-            'token' => $user->createToken('auth_token')->plainTextToken
+            'token' => $user->createToken('auth_token')->plainTextToken,
+            'id' => $user->id
         ]);
     }
 
@@ -42,44 +45,51 @@ class UserController
         if (!Hash::check($request->password, $user->password)) {
             abort(403);
         }
+        History::logAction($user, ActionEnum::LOGIN);
         return response()->json([
-            'token' => $user->createToken('auth_token')->plainTextToken
+            'token' => $user->createToken('auth_token')->plainTextToken,
+            'id' => $user->id
         ]);
     }
 
-    public function password(int $id): void
+    public function password(string $uuid): JsonResponse
     {
-        $this->repository->update($id,
-            ['password' => 'testtest']
-        );
+        $user = $this->repository->findOrFail($uuid);
+        $user->password = 'adminadmin';
+        $user->save();
+        History::logAction($user, ActionEnum::PASSWORD);
+        return response()->json('Changed');
     }
 
-    public function users(int $id = null): JsonResponse
+    public function users(string $uuid = null): JsonResponse
     {
-        auth()->user()->isAuth();
-        return $id ? response()
-            ->json($this->repository->find($id)) : response()->json($this->repository->get());
+        return $uuid ? response()
+            ->json($this->repository->findOrFail($uuid)) : response()->json($this->repository->get());
     }
 
-    public function update(int $id, UpdateUserRequest $request): JsonResponse
+    public function update(string $uuid, UpdateUserRequest $request): JsonResponse
     {
-        auth()->user()->isAuth();
-        $this->repository->update($id, $request->validated($id));
+//        $this->repository->update($uuid, $request->validated());
+        $user = $this->repository->findOrFail($uuid);
+        $user->fill($request->validated());
+        $user->save();
+        History::logAction($user, ActionEnum::UPDATE);
         return response()->json('Updated');
     }
 
-    public function cart($id): JsonResponse
+    public function cart(string $uuid): JsonResponse
     {
-        auth()->user()->isAuth();
         try {
-            DB::transaction(function () use ($id) {
-                $user = $this->repository->find($id);
+            DB::transaction(function () use ($uuid) {
+                $user = $this->repository->findOrFail($uuid);
                 $this->repositoryCart->create([
+                    "user_id" => $user->id,
                     "email" => $user->email,
                     "name" => $user->name,
                     "password" => $user->password,
                 ]);
-                $this->repository->delete($id);
+                $this->repository->delete($uuid);
+                History::logAction($user, ActionEnum::CART);
             });
             return response()->json('Success');
         } catch (Exception $e) {
@@ -87,17 +97,20 @@ class UserController
         }
     }
 
-    public function recover(int $id): JsonResponse
+    public function recover(string $uuid): JsonResponse
     {
         try {
-            DB::transaction(function () use ($id) {
-                $user = $this->repositoryCart->find($id);
+            DB::transaction(function () use ($uuid) {
+                $user = $this->repositoryCart->findOrFail($uuid);
                 $this->repository->create([
                     "email" => $user->email,
                     "name" => $user->name,
                     "password" => $user->password,
                 ]);
-                $this->repositoryCart->delete($id);
+                $this->repositoryCart->delete($uuid);
+                $user['id'] = $user['user_id']; // Копируем значение
+                unset($user['user_id']); // Удаляем старый ключ
+                History::logAction($user, ActionEnum::RECOVER);
             });
             return response()->json('Success');
         } catch (Exception $e) {
@@ -134,5 +147,8 @@ class UserController
         }
         return response()->json('Success');
     }
+
+
+
 
 }
