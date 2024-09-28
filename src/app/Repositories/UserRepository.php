@@ -21,9 +21,10 @@ class UserRepository implements IUserRepository
     {
         return User::query()->find($id);
     }
-    public function update(string $uuid, array $data): void
+    public function update(User $user, array $data): User
     {
-        User::query()->where('id', $uuid)->firstOrFail()->update($data);
+        $user->update($data);
+        return $user;
     }
 
     public function get(): Collection

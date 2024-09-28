@@ -12,7 +12,7 @@ interface IUserRepository
     public function create(array $data): User;
     public function delete(string $uuid): void;
     public function find(int $id): User;
-    public function update(string $uuid, array $data): void;
+    public function update(User $user, array $data): User;
     public function get(): Collection;
     public function findOrFail(string $uuid): ?User;
 

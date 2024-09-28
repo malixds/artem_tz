@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,12 +13,10 @@ use Ramsey\Uuid\Uuid;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasUuids;
 
-    public $incrementing = false;
-
-    // Указываем, что ID — это строка
-    protected $keyType = 'string';
+    protected $keyType = 'string'; // Указываем, что тип ключа строковый
+    public $incrementing = false; // Отключаем автоинкремент
 
     /**
      * The attributes that are mass assignable.
@@ -45,9 +44,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'id' => 'string',
         ];
     }
-
     protected static function boot()
     {
         parent::boot();

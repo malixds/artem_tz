@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController
 {
-
     private IUserRepository $repository;
     private $repositoryCart;
 
@@ -69,10 +68,8 @@ class UserController
 
     public function update(string $uuid, UpdateUserRequest $request): JsonResponse
     {
-//        $this->repository->update($uuid, $request->validated());
         $user = $this->repository->findOrFail($uuid);
-        $user->fill($request->validated());
-        $user->save();
+        $user = $this->repository->update($user, $request->validated());
         History::logAction($user, ActionEnum::UPDATE);
         return response()->json('Updated');
     }
@@ -102,14 +99,13 @@ class UserController
         try {
             DB::transaction(function () use ($uuid) {
                 $user = $this->repositoryCart->findOrFail($uuid);
-                $this->repository->create([
+                $user = $this->repository->create([
+                    "id" => $uuid,
                     "email" => $user->email,
                     "name" => $user->name,
                     "password" => $user->password,
                 ]);
                 $this->repositoryCart->delete($uuid);
-                $user['id'] = $user['user_id']; // Копируем значение
-                unset($user['user_id']); // Удаляем старый ключ
                 History::logAction($user, ActionEnum::RECOVER);
             });
             return response()->json('Success');
@@ -118,9 +114,9 @@ class UserController
         }
     }
 
-    public function delete(int $id): JsonResponse
+    public function delete(string $uuid): JsonResponse
     {
-        $this->repository->delete($id);
+        $this->repository->delete($uuid);
         return response()->json('Deleted');
     }
 
