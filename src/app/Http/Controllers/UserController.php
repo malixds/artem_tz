@@ -11,6 +11,7 @@ use App\Interfaces\IUserRepository;
 use App\Models\History;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -120,17 +121,17 @@ class UserController
         return response()->json('Deleted');
     }
 
-    public function deleteGroup(array $ids): JsonResponse
+    public function deleteGroup(Request $request): JsonResponse
     {
-        foreach ($ids as $id) {
-            $this->delete($id);
+        foreach ($request->input('uuids') as $uuid) {
+            $this->delete($uuid);
         }
         return response()->json('Success');
     }
 
-    public function cartGroup(array $ids): JsonResponse
+    public function cartGroup(Request $request): JsonResponse
     {
-        foreach ($ids as $id) {
+        foreach ($request->input('uuids') as $id) {
             $this->cart($id);
         }
         return response()->json('Success');

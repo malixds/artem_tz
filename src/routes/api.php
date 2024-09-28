@@ -25,9 +25,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/recoverGroup/{uuids}', [UserController::class, 'recoverGroup'])->name('recover-group');
 
     Route::delete('/delete/{uuid}', [UserController::class, 'delete'])->name('delete');
-    Route::delete('/deleteGroup/{uuids}', [UserController::class, 'deleteGroup'])->name('delete-group');
+    Route::delete('/deleteGroup', [UserController::class, 'deleteGroup'])->name('delete-group');
 
-    Route::delete('/cart/group/{uuids}', [UserController::class, 'cartGroup'])->name('cart-group');
+    Route::delete('/cartGroup', [UserController::class, 'cartGroup'])->name('cart-group');
 
 });
 
